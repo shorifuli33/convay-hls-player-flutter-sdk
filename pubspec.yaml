@@ -1,0 +1,17 @@
+name: flutter_hls_player
+description: Simple HLS player using better_player.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  better_player:
+    path: ./better_player-0.0.84
+  http: ^1.2.2
+
+flutter:
+  uses-material-design: true
