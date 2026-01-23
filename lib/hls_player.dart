@@ -145,7 +145,10 @@ class HlsPlayerState extends State<HlsPlayer> {
   }
 
   Future<void> _updatePlatformHlsToken(HlsToken token) async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    if (kIsWeb) return;
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final isIos = defaultTargetPlatform == TargetPlatform.iOS;
+    if (!isAndroid && !isIos) return;
     try {
       await _platformChannel.invokeMethod('setHlsToken', {
         'token': token.playlistToken,

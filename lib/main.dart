@@ -40,7 +40,7 @@ class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
       'https://cast.convay.com/hls/stream.m3u8';
   static const String _playlistAccessUrl =
       'https://streamrelay.convay.com/devcast/api/test/access';
-  static const String _streamId = '325e58ef-6e09-414d-a855-f41213ab60cf';
+  static const String _streamId = '6727917a-3c3d-4433-81fb-e6463e7f19df';
 
   late String _streamUrl;
 

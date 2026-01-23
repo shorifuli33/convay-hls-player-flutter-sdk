@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "BetterPlayerPlugin.h"
+#import "BetterPlayerHlsTokenStore.h"
 #import <better_player/better_player-Swift.h>
 
 #if !__has_feature(objc_arc)
@@ -291,6 +292,11 @@ bool _remoteCommandsInitialized = false;
     } else if ([@"create" isEqualToString:call.method]) {
         BetterPlayer* player = [[BetterPlayer alloc] initWithFrame:CGRectZero];
         [self onPlayerSetup:player result:result];
+    } else if ([@"setHlsToken" isEqualToString:call.method]) {
+        NSString *token = call.arguments[@"token"];
+        NSString *exp = call.arguments[@"exp"];
+        [BetterPlayerHlsTokenStore updateToken:token exp:exp];
+        result(nil);
     } else {
         NSDictionary* argsMap = call.arguments;
         int64_t textureId = ((NSNumber*)argsMap[@"textureId"]).unsignedIntegerValue;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "BetterPlayer.h"
+#import "BetterPlayerHlsTokenStore.h"
 #import <better_player/better_player-Swift.h>
 
 static void* timeRangeContext = &timeRangeContext;
@@ -202,6 +203,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     }
     
     AVPlayerItem* item;
+    BetterPlayerHlsTokenResourceLoaderDelegate *tokenDelegate = nil;
+    NSString *tokenHeader = headers[@"X-HLS-Token"];
+    NSString *expHeader = headers[@"X-HLS-Exp"];
+    if (tokenHeader != nil || expHeader != nil) {
+        [BetterPlayerHlsTokenStore updateToken:tokenHeader exp:expHeader];
+    }
     if (useCache){
         if (cacheKey == [NSNull null]){
             cacheKey = nil;
@@ -212,8 +219,26 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         
         item = [cacheManager getCachingPlayerItemForNormalPlayback:url cacheKey:cacheKey videoExtension: videoExtension headers:headers];
     } else {
-        AVURLAsset* asset = [AVURLAsset URLAssetWithURL:url
+        NSURL *assetUrl = url;
+        NSString *scheme = assetUrl.scheme ?: @"https";
+        BOOL isHttp = [scheme isEqualToString:@"http"] || [scheme isEqualToString:@"https"];
+        BOOL isHls = [[assetUrl.pathExtension lowercaseString] isEqualToString:@"m3u8"];
+        if (isHttp && isHls && [BetterPlayerHlsTokenStore hasToken]) {
+            NSURLComponents *components =
+                [NSURLComponents componentsWithURL:assetUrl resolvingAgainstBaseURL:NO];
+            components.scheme = @"hls-token";
+            assetUrl = components.URL;
+            tokenDelegate = [[BetterPlayerHlsTokenResourceLoaderDelegate alloc]
+                initWithOriginalScheme:scheme
+                token:[BetterPlayerHlsTokenStore token]
+                exp:[BetterPlayerHlsTokenStore exp]];
+        }
+        AVURLAsset* asset = [AVURLAsset URLAssetWithURL:assetUrl
                                                 options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
+        if (tokenDelegate != nil) {
+            _hlsTokenLoaderDelegate = tokenDelegate;
+            [asset.resourceLoader setDelegate:tokenDelegate queue:dispatch_get_main_queue()];
+        }
         if (certificateUrl && certificateUrl != [NSNull null] && [certificateUrl length] > 0) {
             NSURL * certificateNSURL = [[NSURL alloc] initWithString: certificateUrl];
             NSURL * licenseNSURL = [[NSURL alloc] initWithString: licenseUrl];
