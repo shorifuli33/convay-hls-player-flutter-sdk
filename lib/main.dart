@@ -40,7 +40,7 @@ class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
       'https://cast.convay.com/hls/stream.m3u8';
   static const String _playlistAccessUrl =
       'https://streamrelay.convay.com/devcast/api/test/access';
-  static const String _streamId = '6727917a-3c3d-4433-81fb-e6463e7f19df';
+  static const String _streamId = '37a3209e-3b9b-4013-9c66-4ba1cb864165';
 
   late String _streamUrl;
 
@@ -107,9 +107,9 @@ class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
                     }
 
                     final normalizedExpiry = normalizeExpirySeconds(expiration);
-                    final expiryTime = DateTime.fromMillisecondsSinceEpoch(
-                        normalizedExpiry * 1000);
-                    debugPrint('HLS token expires at: $expiryTime');
+                    // final expiryTime = DateTime.fromMillisecondsSinceEpoch(
+                    //     normalizedExpiry * 1000);
+                    // debugPrint('HLS token expires at: $expiryTime');
                     return HlsToken(
                       playlistToken: token,
                       playlistExpiry: normalizedExpiry,

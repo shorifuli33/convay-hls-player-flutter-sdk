@@ -1,9 +1,11 @@
 import 'dart:async';
 
-import 'package:better_player/better_player.dart';
+import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'local_hls_proxy.dart';
 
 class HlsToken {
   final String playlistToken;
@@ -57,21 +59,18 @@ class HlsPlayerState extends State<HlsPlayer> {
   bool _showLoader = false;
   int? _lastTokenRefreshEpoch;
   bool _retryKeepPosition = true;
-  int _retryAttempt = 0;
+  // No retry backoff; retries happen immediately.
   bool _suppressLoader = false;
-  static const List<Duration> _retryDelays = [
-    Duration(seconds: 2),
-    Duration(seconds: 4),
-    Duration(seconds: 8),
-    Duration(seconds: 12),
-    Duration(seconds: 20),
-  ];
+  static const Duration _retryDelay = Duration.zero;
   static const Duration _liveEdgeCheckInterval = Duration(seconds: 10);
   static const Duration _maxBehindLive = Duration(seconds: 20);
+  LocalHlsProxy? _localProxy;
+  late final bool _useLocalProxy;
 
   @override
   void initState() {
     super.initState();
+    _useLocalProxy = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
     _controller = BetterPlayerController(
       BetterPlayerConfiguration(
         autoPlay: widget.autoPlay,
@@ -122,6 +121,7 @@ class HlsPlayerState extends State<HlsPlayer> {
     _retryTimer?.cancel();
     _controller.removeEventsListener(_onPlayerEvent);
     _controller.dispose();
+    unawaited(_localProxy?.dispose());
     super.dispose();
   }
 
@@ -133,6 +133,7 @@ class HlsPlayerState extends State<HlsPlayer> {
     _liveEdgeTimer?.cancel();
     _token = null;
     try {
+      await _ensureLocalProxy();
       await _refreshTokenIfNeeded(force: true, applyAfterRefresh: false);
       await _applyDataSource(keepPosition: false);
       _startTokenRefreshLoop();
@@ -157,6 +158,23 @@ class HlsPlayerState extends State<HlsPlayer> {
     } catch (_) {
       // Ignore; token will be applied on next data source setup if needed.
     }
+  }
+
+  Future<void> _ensureLocalProxy() async {
+    if (!_useLocalProxy) return;
+    final proxy = _localProxy ?? LocalHlsProxy();
+    _localProxy = proxy;
+    if (!proxy.isRunning) {
+      await proxy.start(urlSigner: _signProxyUrl);
+    }
+  }
+
+  Future<Uri> _signProxyUrl(Uri targetUrl) async {
+    await _refreshTokenIfNeeded(force: false, applyAfterRefresh: false);
+    final token = _token;
+    if (token == null) return targetUrl;
+    final signed = _buildUrlWithToken(targetUrl.toString(), token);
+    return Uri.parse(signed);
   }
 
   Future<void> _refreshTokenIfNeeded({
@@ -186,7 +204,7 @@ class HlsPlayerState extends State<HlsPlayer> {
       debugPrint('Refreshing HLS token (force=$force, now=$now).');
       _token = await widget.tokenRefreshMethod!.call();
       _lastTokenRefreshEpoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      debugPrint('HLS token refreshed.');
+      // debugPrint('HLS token refreshed.');
       _scheduleTokenRefresh();
       final latestToken = _token;
       if (latestToken != null) {
@@ -364,8 +382,12 @@ class HlsPlayerState extends State<HlsPlayer> {
     required bool keepPosition,
     bool suppressLoader = false,
   }) async {
-    final url = _buildUrlWithToken(widget.streamUrl, _token);
-    final headers = _buildTokenHeaders(_token);
+    final useProxy = _useLocalProxy && (_localProxy?.isRunning ?? false);
+    final baseUrl = _stripTokenParams(widget.streamUrl);
+    final url = useProxy
+        ? _localProxy!.buildProxyUrl(Uri.parse(baseUrl)).toString()
+        : _buildUrlWithToken(baseUrl, _token);
+    final headers = useProxy ? null : _buildTokenHeaders(_token);
     final dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       url,
@@ -417,12 +439,8 @@ class HlsPlayerState extends State<HlsPlayer> {
     if (!mounted) return;
     if (_retryTimer?.isActive ?? false) return;
     _retryKeepPosition = keepPosition;
-    final index =
-        _retryAttempt < _retryDelays.length ? _retryAttempt : _retryDelays.length - 1;
-    final delay = _retryDelays[index];
-    _retryAttempt++;
     _setLoader(true);
-    _retryTimer = Timer(delay, () async {
+    _retryTimer = Timer(_retryDelay, () async {
       _retryTimer = null;
       if (!mounted) return;
       await _refreshTokenIfNeeded(force: false, applyAfterRefresh: false);
@@ -433,7 +451,6 @@ class HlsPlayerState extends State<HlsPlayer> {
   void _clearRetry() {
     _retryTimer?.cancel();
     _retryTimer = null;
-    _retryAttempt = 0;
   }
 
   void _setLoaderIfIdle() {
@@ -457,13 +474,13 @@ class HlsPlayerState extends State<HlsPlayer> {
       updatedQuery['token'] = token.playlistToken;
       updatedQuery['exp'] = token.playlistExpiry.toString();
       final returnUri = uri.replace(queryParameters: updatedQuery).toString();
-      debugPrint('returnUri>>>:\n$returnUri');
+      // debugPrint('returnUri>>>:\n$returnUri');
       return returnUri;
     } catch (_) {
       final separator = url.contains('?') ? '&' : '?';
       final returnUri =
           '$url${separator}token=${Uri.encodeComponent(token.playlistToken)}&exp=${token.playlistExpiry}';
-      debugPrint('returnUri>>>:\n$returnUri');
+      // debugPrint('returnUri>>>:\n$returnUri');
       return returnUri;
     }
   }

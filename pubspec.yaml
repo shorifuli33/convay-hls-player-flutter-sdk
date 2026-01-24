@@ -9,9 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  better_player:
-    path: ./better_player-0.0.84
+  # better_player:
+  #   path: ./better_player-0.0.84
   http: ^1.2.2
+  better_player_plus:
+    path: ./better_player_plus-1.1.5
+  webview_flutter: ^4.13.1
 
 flutter:
   uses-material-design: true
