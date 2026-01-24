@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'hls_player.dart';
+import 'convay_hls_player.dart';
 
 void main() {
   runApp(const HlsPlayerApp());
@@ -62,7 +62,7 @@ class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
           children: [
             Expanded(
               child: Center(
-                child: HlsPlayer(
+                child: ConvayHlsPlayer(
                   streamUrl: _streamUrl.trim(),
                   abrEnabled: true,
                   isLive: true,
@@ -110,7 +110,7 @@ class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
                     // final expiryTime = DateTime.fromMillisecondsSinceEpoch(
                     //     normalizedExpiry * 1000);
                     // debugPrint('HLS token expires at: $expiryTime');
-                    return HlsToken(
+                    return ConvayHlsToken(
                       playlistToken: token,
                       playlistExpiry: normalizedExpiry,
                     );

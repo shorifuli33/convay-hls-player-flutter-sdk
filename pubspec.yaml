@@ -1,4 +1,4 @@
-name: flutter_hls_player
+name: convay_hls_player
 description: Simple HLS player using better_player.
 publish_to: 'none'
 version: 0.1.0

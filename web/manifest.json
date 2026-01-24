@@ -1,6 +1,6 @@
 {
-    "name": "flutter_hls_player",
-    "short_name": "flutter_hls_player",
+    "name": "convay_hls_player",
+    "short_name": "convay_hls_player",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -10,7 +10,6 @@ Advanced video player for Flutter, based on video_player and inspired by Chewie 
 It solves many common use cases out of the box and is easy to integrate.
                        DESC
   s.homepage         = 'https://github.com/SunnatilloShavkatov/betterplayer.git'
-  s.license          = { :file => '../LICENSE' }
   s.author           = { 'Sunnatillo Shavkatov' => 'sunnatillo.shavkatov@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'

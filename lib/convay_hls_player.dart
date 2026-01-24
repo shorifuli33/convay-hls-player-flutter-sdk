@@ -7,19 +7,19 @@ import 'package:flutter/services.dart';
 
 import 'local_hls_proxy.dart';
 
-class HlsToken {
+class ConvayHlsToken {
   final String playlistToken;
   final int playlistExpiry;
 
-  const HlsToken({
+  const ConvayHlsToken({
     required this.playlistToken,
     required this.playlistExpiry,
   });
 }
 
-typedef HlsTokenRefresh = Future<HlsToken> Function();
+typedef HlsTokenRefresh = Future<ConvayHlsToken> Function();
 
-class HlsPlayer extends StatefulWidget {
+class ConvayHlsPlayer extends StatefulWidget {
   final String streamUrl;
   final HlsTokenRefresh? tokenRefreshMethod;
   final bool abrEnabled;
@@ -28,7 +28,7 @@ class HlsPlayer extends StatefulWidget {
   final bool muted;
   final bool isLive;
 
-  const HlsPlayer({
+  const ConvayHlsPlayer({
     super.key,
     required this.streamUrl,
     this.tokenRefreshMethod,
@@ -40,10 +40,10 @@ class HlsPlayer extends StatefulWidget {
   });
 
   @override
-  State<HlsPlayer> createState() => HlsPlayerState();
+  State<ConvayHlsPlayer> createState() => ConvayHlsPlayerState();
 }
 
-class HlsPlayerState extends State<HlsPlayer> {
+class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
   static const MethodChannel _platformChannel =
       MethodChannel('better_player_channel');
   late BetterPlayerController _controller;
@@ -51,7 +51,7 @@ class HlsPlayerState extends State<HlsPlayer> {
   Timer? _scheduledRefreshTimer;
   Timer? _liveEdgeTimer;
   Timer? _retryTimer;
-  HlsToken? _token;
+  ConvayHlsToken? _token;
   bool _refreshInProgress = false;
   bool _liveRecoveryInProgress = false;
   bool _pendingDataSourceUpdate = false;
@@ -80,6 +80,7 @@ class HlsPlayerState extends State<HlsPlayer> {
         controlsConfiguration: BetterPlayerControlsConfiguration(
           enableQualities: widget.abrEnabled,
           enableAudioTracks: true,
+          enablePip: true,
           enableSubtitles: true,
           enableSkips: false,
           loadingWidget: const SizedBox.shrink(),
@@ -92,7 +93,7 @@ class HlsPlayerState extends State<HlsPlayer> {
   }
 
   @override
-  void didUpdateWidget(covariant HlsPlayer oldWidget) {
+  void didUpdateWidget(covariant ConvayHlsPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     final oldBaseUrl = _stripTokenParams(oldWidget.streamUrl);
     final newBaseUrl = _stripTokenParams(widget.streamUrl);
@@ -145,7 +146,7 @@ class HlsPlayerState extends State<HlsPlayer> {
     }
   }
 
-  Future<void> _updatePlatformHlsToken(HlsToken token) async {
+  Future<void> _updatePlatformHlsToken(ConvayHlsToken token) async {
     if (kIsWeb) return;
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final isIos = defaultTargetPlatform == TargetPlatform.iOS;
@@ -466,7 +467,7 @@ class HlsPlayerState extends State<HlsPlayer> {
     });
   }
 
-  String _buildUrlWithToken(String url, HlsToken? token) {
+  String _buildUrlWithToken(String url, ConvayHlsToken? token) {
     if (token == null) return url;
     try {
       final uri = Uri.parse(url);
@@ -498,7 +499,7 @@ class HlsPlayerState extends State<HlsPlayer> {
     }
   }
 
-  Map<String, String>? _buildTokenHeaders(HlsToken? token) {
+  Map<String, String>? _buildTokenHeaders(ConvayHlsToken? token) {
     if (token == null) return null;
     return {
       'X-HLS-Token': token.playlistToken,

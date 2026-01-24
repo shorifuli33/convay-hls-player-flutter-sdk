@@ -1,4 +1,4 @@
-package com.example.flutter_hls_player
+package com.convay.hlsplayer
 
 import io.flutter.embedding.android.FlutterActivity
 

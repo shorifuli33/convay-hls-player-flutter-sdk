@@ -39,6 +39,7 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
   BetterPlayerConfiguration get _betterPlayerConfiguration => widget.controller.betterPlayerConfiguration;
 
   bool _isFullScreen = false;
+  bool _isWakelockEnabled = false;
 
   ///State of navigator on widget created
   late NavigatorState _navigatorState;
@@ -70,6 +71,8 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
 
   Future<void> _setup() async {
     _controllerEventSubscription = widget.controller.controllerEventStream.listen(onControllerEvent);
+    widget.controller.addEventsListener(_onPlayerEvent);
+    _syncWakelockForPlayback();
 
     //Default locale
     var locale = const Locale('en', 'US');
@@ -90,7 +93,7 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
     ///full screen is on, then full screen route must be pop and return to normal
     ///state.
     if (_isFullScreen) {
-      WakelockPlus.disable();
+      _setWakelock(false);
       _navigatorState.maybePop();
       SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
@@ -101,6 +104,8 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
 
     WidgetsBinding.instance.removeObserver(this);
     _controllerEventSubscription?.cancel();
+    widget.controller.removeEventsListener(_onPlayerEvent);
+    _setWakelock(false);
     widget.controller.dispose();
     VisibilityDetectorController.instance.forget(Key('${widget.controller.hashCode}_key'));
     super.dispose();
@@ -111,6 +116,9 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
     if (oldWidget.controller != widget.controller) {
       _controllerEventSubscription?.cancel();
       _controllerEventSubscription = widget.controller.controllerEventStream.listen(onControllerEvent);
+      oldWidget.controller.removeEventsListener(_onPlayerEvent);
+      widget.controller.addEventsListener(_onPlayerEvent);
+      _syncWakelockForPlayback();
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -123,6 +131,40 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
         onFullScreenChanged();
       default:
         setState(() {});
+    }
+  }
+
+  void _onPlayerEvent(BetterPlayerEvent event) {
+    switch (event.betterPlayerEventType) {
+      case BetterPlayerEventType.play:
+      case BetterPlayerEventType.pause:
+      case BetterPlayerEventType.finished:
+      case BetterPlayerEventType.setupDataSource:
+      case BetterPlayerEventType.exception:
+        _syncWakelockForPlayback();
+      default:
+        break;
+    }
+  }
+
+  void _syncWakelockForPlayback({bool forceDisable = false}) {
+    if (_betterPlayerConfiguration.allowedScreenSleep) {
+      return;
+    }
+    final isPlaying = widget.controller.videoPlayerController?.value.isPlaying ?? false;
+    final shouldEnable = !forceDisable && isPlaying;
+    _setWakelock(shouldEnable);
+  }
+
+  void _setWakelock(bool enabled) {
+    if (_isWakelockEnabled == enabled) {
+      return;
+    }
+    _isWakelockEnabled = enabled;
+    if (enabled) {
+      WakelockPlus.enable();
+    } else {
+      WakelockPlus.disable();
     }
   }
 
@@ -201,25 +243,18 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
       );
     }
 
-    if (!_betterPlayerConfiguration.allowedScreenSleep) {
-      await WakelockPlus.enable();
-    }
-
     if (context.mounted) {
       await Navigator.of(context, rootNavigator: true).push(route);
       _isFullScreen = false;
       widget.controller.backFromFullScreen();
     }
 
-    // The wakelock plugins checks whether it needs to perform an action internally,
-    // so we do not need to check Wakelock.isEnabled.
-    await WakelockPlus.disable();
-
     await SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: _betterPlayerConfiguration.systemOverlaysAfterFullScreen,
     );
     await SystemChrome.setPreferredOrientations(_betterPlayerConfiguration.deviceOrientationsAfterFullScreen);
+    _syncWakelockForPlayback();
   }
 
   Widget _buildPlayer() => VisibilityDetector(
@@ -232,6 +267,11 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     widget.controller.setAppLifecycleState(state);
+    if (state != AppLifecycleState.resumed) {
+      _syncWakelockForPlayback(forceDisable: true);
+    } else {
+      _syncWakelockForPlayback();
+    }
   }
 }
 
