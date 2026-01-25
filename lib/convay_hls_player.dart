@@ -27,6 +27,7 @@ class ConvayHlsPlayer extends StatefulWidget {
   final bool autoPlay;
   final bool muted;
   final bool isLive;
+  final bool useLocalProxy;
 
   const ConvayHlsPlayer({
     super.key,
@@ -37,6 +38,7 @@ class ConvayHlsPlayer extends StatefulWidget {
     this.autoPlay = true,
     this.muted = false,
     this.isLive = false,
+    this.useLocalProxy = false,
   });
 
   @override
@@ -70,7 +72,9 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
   @override
   void initState() {
     super.initState();
-    _useLocalProxy = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    _useLocalProxy = widget.useLocalProxy &&
+        !kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.iOS;
     _controller = BetterPlayerController(
       BetterPlayerConfiguration(
         autoPlay: widget.autoPlay,
