@@ -33,6 +33,7 @@ public class BetterPlayer: NSObject, FlutterPlatformView, FlutterStreamHandler, 
     public var playerRate: Float = 1.0
     public var overriddenDuration: Int = 0
     public var lastAvPlayerTimeControlStatus: AVPlayer.TimeControlStatus? = nil
+    private var mixWithOthersEnabled: Bool = false
 
     private var pipController: AVPictureInPictureController?
     private var restoreUIOnPipStop: ((Bool) -> Void)?
@@ -462,6 +463,7 @@ public class BetterPlayer: NSObject, FlutterPlatformView, FlutterStreamHandler, 
         stalledCount = 0
         isStalledCheckStarted = false
         isPlaying = true
+        ensureAudioSessionActive()
         updatePlayingState()
     }
 
@@ -643,11 +645,21 @@ public class BetterPlayer: NSObject, FlutterPlatformView, FlutterStreamHandler, 
     }
 
     public func setMixWithOthers(_ mixWithOthers: Bool) {
+        mixWithOthersEnabled = mixWithOthers
         if mixWithOthers {
             try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
         } else {
             try? AVAudioSession.sharedInstance().setCategory(.playback)
         }
+    }
+
+    private func ensureAudioSessionActive() {
+        if mixWithOthersEnabled {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+        } else {
+            try? AVAudioSession.sharedInstance().setCategory(.playback)
+        }
+        try? AVAudioSession.sharedInstance().setActive(true)
     }
 
     // MARK: - FlutterStreamHandler
