@@ -53,6 +53,8 @@ app.*.map.json
 
 # Keep tracked dotfiles used by the project and examples
 !.gitignore
+!.pubignore
 !.metadata
 !android/.gitignore
 !ios/.gitignore
+!ios/Package.swift

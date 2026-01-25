@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Advanced HLS player with token refresh and seamless playback.
   DESC
-  s.homepage         = 'https://github.com/Synesis-IT-PLC/convay-hls-player-sdk'
+  s.homepage         = 'https://github.com/Synesis-IT-PLC/convay-hls-player-flutter-sdk'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Convay' => 'support@convay.com' }
   s.source           = { :path => '.' }
