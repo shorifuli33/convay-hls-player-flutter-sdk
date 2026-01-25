@@ -37,10 +37,10 @@ class HlsPlayerScreen extends StatefulWidget {
 
 class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
   static const String defaultStreamUrl =
-      'https://cast.convay.com/hls/stream.m3u8';
+      'https://edtech.convay.com/hls/stream.m3u8';
   static const String _playlistAccessUrl =
       'https://streamrelay.convay.com/devcast/api/test/access';
-  static const String _streamId = '37a3209e-3b9b-4013-9c66-4ba1cb864165';
+  static const String _streamId = '2312eb5f-5926-418e-8193-2c36f6e5082b';
 
   late String _streamUrl;
 
@@ -107,9 +107,9 @@ class _HlsPlayerScreenState extends State<HlsPlayerScreen> {
                     }
 
                     final normalizedExpiry = normalizeExpirySeconds(expiration);
-                    // final expiryTime = DateTime.fromMillisecondsSinceEpoch(
-                    //     normalizedExpiry * 1000);
-                    // debugPrint('HLS token expires at: $expiryTime');
+                    final expiryTime = DateTime.fromMillisecondsSinceEpoch(
+                        normalizedExpiry * 1000);
+                    debugPrint('HLS token expires at: $expiryTime');
                     return ConvayHlsToken(
                       playlistToken: token,
                       playlistExpiry: normalizedExpiry,

@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:better_player_plus/better_player_plus.dart';
+import 'package:convay_hls_player/better_player_plus/better_player_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'local_hls_proxy.dart';
+import 'proxy/local_hls_proxy.dart';
 
 class ConvayHlsToken {
   final String playlistToken;
@@ -475,7 +475,7 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
       updatedQuery['token'] = token.playlistToken;
       updatedQuery['exp'] = token.playlistExpiry.toString();
       final returnUri = uri.replace(queryParameters: updatedQuery).toString();
-      // debugPrint('returnUri>>>:\n$returnUri');
+      debugPrint('returnUri>>>:\n$returnUri');
       return returnUri;
     } catch (_) {
       final separator = url.contains('?') ? '&' : '?';
