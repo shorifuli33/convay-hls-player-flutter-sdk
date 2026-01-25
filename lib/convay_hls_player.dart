@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:better_player_plus/better_player_plus.dart';
+import 'package:convay_hls_player/better_player_plus/better_player_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'local_hls_proxy.dart';
+import 'proxy/local_hls_proxy.dart';
 
 class ConvayHlsToken {
   final String playlistToken;
@@ -27,6 +27,7 @@ class ConvayHlsPlayer extends StatefulWidget {
   final bool autoPlay;
   final bool muted;
   final bool isLive;
+  final bool useLocalProxy;
 
   const ConvayHlsPlayer({
     super.key,
@@ -37,6 +38,7 @@ class ConvayHlsPlayer extends StatefulWidget {
     this.autoPlay = true,
     this.muted = false,
     this.isLive = false,
+    this.useLocalProxy = true,
   });
 
   @override
@@ -70,12 +72,15 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
   @override
   void initState() {
     super.initState();
-    _useLocalProxy = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    _useLocalProxy = widget.useLocalProxy &&
+        !kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.iOS;
     _controller = BetterPlayerController(
       BetterPlayerConfiguration(
         autoPlay: widget.autoPlay,
         fit: BoxFit.contain,
         aspectRatio: 16 / 9,
+        allowedScreenSleep: false,
         errorBuilder: (_, __) => const SizedBox.shrink(),
         controlsConfiguration: BetterPlayerControlsConfiguration(
           enableQualities: widget.abrEnabled,
@@ -244,12 +249,12 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
     final timeRemaining = token.playlistExpiry - now;
     final secondsUntilRefresh = timeRemaining - widget.playlistRefreshThreshold;
     final delaySeconds = secondsUntilRefresh <= 0 ? 1 : secondsUntilRefresh;
-    final refreshAt =
-        DateTime.fromMillisecondsSinceEpoch((now + delaySeconds) * 1000);
-    final expiryAt =
-        DateTime.fromMillisecondsSinceEpoch(token.playlistExpiry * 1000);
-    debugPrint(
-        'Scheduled token refresh at $refreshAt (expires at $expiryAt).');
+    // final refreshAt =
+    //     DateTime.fromMillisecondsSinceEpoch((now + delaySeconds) * 1000);
+    // final expiryAt =
+    //     DateTime.fromMillisecondsSinceEpoch(token.playlistExpiry * 1000);
+    // debugPrint(
+    //     'Scheduled token refresh at $refreshAt (expires at $expiryAt).');
     _scheduledRefreshTimer =
         Timer(Duration(seconds: delaySeconds), () async {
       await _refreshTokenIfNeeded(force: true, applyAfterRefresh: true);
