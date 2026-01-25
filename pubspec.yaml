@@ -1,8 +1,8 @@
 name: convay_hls_player
 description: ConvayHlsPlayer widget for seamless HLS playback with token refresh.
 version: 1.0.0
-homepage: https://github.com/maksudur-rahman/convay-hls-player
-repository: https://github.com/maksudur-rahman/convay-hls-player
+homepage: https://github.com/Synesis-IT-PLC/convay-hls-player-sdk
+repository: https://github.com/Synesis-IT-PLC/convay-hls-player-sdk
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
