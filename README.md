@@ -45,10 +45,9 @@ flutter run
 
 ## Screenshots
 
-![Feature 1](screenshots/screenshot_feature1.png)
-![Feature 2](screenshots/screenshot_feature2.png)
-![Landscape](screenshots/screenshot_landscape.png)
-![Portrait](screenshots/screenshot_potrait.png)
+<img src="screenshots/screenshot_feature1.png" width="220" alt="Feature 1">
+<img src="screenshots/screenshot_feature2.png" width="220" alt="Feature 2">
+<img src="screenshots/screenshot_landscape.png" width="220" alt="Landscape">
 
 ## Usage
 
