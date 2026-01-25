@@ -1,10 +1,12 @@
 name: convay_hls_player
-description: Simple HLS player using better_player.
-publish_to: 'none'
-version: 0.1.0
+description: ConvayHlsPlayer widget for seamless HLS playback with token refresh.
+version: 1.0.0
+homepage: https://github.com/maksudur-rahman/convay-hls-player
+repository: https://github.com/maksudur-rahman/convay-hls-player
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.16.0'
 
 dependencies:
   flutter:
@@ -25,3 +27,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  plugin:
+    platforms:
+      android:
+        package: uz.shs.better_player_plus
+        pluginClass: BetterPlayerPlugin
+      ios:
+        pluginClass: SwiftBetterPlayerPlugin

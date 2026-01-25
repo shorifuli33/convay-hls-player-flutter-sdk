@@ -38,7 +38,7 @@ class ConvayHlsPlayer extends StatefulWidget {
     this.autoPlay = true,
     this.muted = false,
     this.isLive = false,
-    this.useLocalProxy = false,
+    this.useLocalProxy = true,
   });
 
   @override
@@ -249,12 +249,12 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
     final timeRemaining = token.playlistExpiry - now;
     final secondsUntilRefresh = timeRemaining - widget.playlistRefreshThreshold;
     final delaySeconds = secondsUntilRefresh <= 0 ? 1 : secondsUntilRefresh;
-    final refreshAt =
-        DateTime.fromMillisecondsSinceEpoch((now + delaySeconds) * 1000);
-    final expiryAt =
-        DateTime.fromMillisecondsSinceEpoch(token.playlistExpiry * 1000);
-    debugPrint(
-        'Scheduled token refresh at $refreshAt (expires at $expiryAt).');
+    // final refreshAt =
+    //     DateTime.fromMillisecondsSinceEpoch((now + delaySeconds) * 1000);
+    // final expiryAt =
+    //     DateTime.fromMillisecondsSinceEpoch(token.playlistExpiry * 1000);
+    // debugPrint(
+    //     'Scheduled token refresh at $refreshAt (expires at $expiryAt).');
     _scheduledRefreshTimer =
         Timer(Duration(seconds: delaySeconds), () async {
       await _refreshTokenIfNeeded(force: true, applyAfterRefresh: true);
@@ -480,7 +480,7 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
       updatedQuery['token'] = token.playlistToken;
       updatedQuery['exp'] = token.playlistExpiry.toString();
       final returnUri = uri.replace(queryParameters: updatedQuery).toString();
-      debugPrint('returnUri>>>:\n$returnUri');
+      // debugPrint('returnUri>>>:\n$returnUri');
       return returnUri;
     } catch (_) {
       final separator = url.contains('?') ? '&' : '?';
