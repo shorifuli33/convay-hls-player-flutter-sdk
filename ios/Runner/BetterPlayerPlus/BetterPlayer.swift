@@ -34,6 +34,7 @@ public class BetterPlayer: NSObject, FlutterPlatformView, FlutterStreamHandler, 
     public var overriddenDuration: Int = 0
     public var lastAvPlayerTimeControlStatus: AVPlayer.TimeControlStatus? = nil
     private var mixWithOthersEnabled: Bool = false
+    private var resumeCheckWorkItem: DispatchWorkItem?
 
     private var pipController: AVPictureInPictureController?
     private var restoreUIOnPipStop: ((Bool) -> Void)?
@@ -465,11 +466,13 @@ public class BetterPlayer: NSObject, FlutterPlatformView, FlutterStreamHandler, 
         isPlaying = true
         ensureAudioSessionActive()
         updatePlayingState()
+        scheduleResumeCheck()
     }
 
     public func pause() {
         isPlaying = false
         updatePlayingState()
+        cancelResumeCheck()
     }
 
     public func position() -> Int64 {
@@ -660,6 +663,31 @@ public class BetterPlayer: NSObject, FlutterPlatformView, FlutterStreamHandler, 
             try? AVAudioSession.sharedInstance().setCategory(.playback)
         }
         try? AVAudioSession.sharedInstance().setActive(true)
+    }
+
+    private func scheduleResumeCheck() {
+        resumeCheckWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self, self.isPlaying else { return }
+            if #available(iOS 10.0, *) {
+                if self.player.timeControlStatus != .playing {
+                    _ = self.softRefreshCurrentItem()
+                    self.player.play()
+                    self.player.rate = self.playerRate
+                }
+            } else if self.player.rate == 0 {
+                _ = self.softRefreshCurrentItem()
+                self.player.play()
+                self.player.rate = self.playerRate
+            }
+        }
+        resumeCheckWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
+    }
+
+    private func cancelResumeCheck() {
+        resumeCheckWorkItem?.cancel()
+        resumeCheckWorkItem = nil
     }
 
     // MARK: - FlutterStreamHandler
