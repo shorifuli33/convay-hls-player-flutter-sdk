@@ -1,0 +1,15 @@
+.gitignore
+.metadata
+android/.gitignore
+ios/.gitignore
+.dart_tool/
+build/
+example/build/
+example/**/build/
+example/ios/Pods/
+example/ios/Flutter/ephemeral/
+example/ios/Flutter/Generated.xcconfig
+example/ios/Runner/GeneratedPluginRegistrant.*
+example/ios/Runner.xcworkspace/xcuserdata/
+example/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+.DS_Store
