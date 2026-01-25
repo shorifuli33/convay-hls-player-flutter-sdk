@@ -30,6 +30,11 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  pod 'Cache'
+  pod 'HLSCachingReverseProxyServer'
+  pod 'GCDWebServer'
+  pod 'PINCache'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
