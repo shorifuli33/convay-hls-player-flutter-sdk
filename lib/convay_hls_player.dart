@@ -76,6 +76,7 @@ class ConvayHlsPlayerState extends State<ConvayHlsPlayer> {
         autoPlay: widget.autoPlay,
         fit: BoxFit.contain,
         aspectRatio: 16 / 9,
+        allowedScreenSleep: false,
         errorBuilder: (_, __) => const SizedBox.shrink(),
         controlsConfiguration: BetterPlayerControlsConfiguration(
           enableQualities: widget.abrEnabled,
