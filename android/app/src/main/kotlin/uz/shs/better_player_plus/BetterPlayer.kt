@@ -15,6 +15,7 @@ import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.widget.Toast
 import uz.shs.better_player_plus.DataSourceUtils.getUserAgent
 import uz.shs.better_player_plus.DataSourceUtils.isHTTP
 import uz.shs.better_player_plus.DataSourceUtils.getDataSourceFactory
@@ -84,6 +85,7 @@ internal class BetterPlayer(
     customDefaultLoadControl: CustomDefaultLoadControl?,
     result: MethodChannel.Result
 ) {
+    private val appContext = context.applicationContext
     private val exoPlayer: ExoPlayer?
     private val eventSink = QueuingEventSink()
     private val trackSelector: DefaultTrackSelector = DefaultTrackSelector(context)
@@ -495,6 +497,17 @@ internal class BetterPlayer(
             }
 
             override fun onPlayerError(error: PlaybackException) {
+                Handler(Looper.getMainLooper()).post {
+                    val message = buildString {
+                        append("Playback error")
+                        val details = error.errorCodeName.ifBlank { error.message ?: "" }
+                        if (details.isNotBlank()) {
+                            append(": ")
+                            append(details)
+                        }
+                    }
+                    Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+                }
                 eventSink.error("VideoError", "Video player had error $error", "")
             }
         })
