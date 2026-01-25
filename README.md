@@ -45,9 +45,11 @@ flutter run
 
 ## Screenshots
 
-<img src="screenshots/screenshot_feature1.png" width="220" alt="Feature 1">
-<img src="screenshots/screenshot_feature2.png" width="220" alt="Feature 2">
-<img src="screenshots/screenshot_landscape.png" width="220" alt="Landscape">
+<p>
+  <img src="screenshots/screenshot_feature1.png" width="220" alt="Feature 1">
+  <img src="screenshots/screenshot_feature2.png" width="220" alt="Feature 2">
+  <img src="screenshots/screenshot_landscape.png" width="220" alt="Landscape">
+</p>
 
 ## Usage
 
