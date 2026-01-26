@@ -1,6 +1,6 @@
 name: convay_hls_player
 description: ConvayHlsPlayer widget for seamless HLS playback with token refresh.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/Synesis-IT-PLC/convay-hls-player-flutter-sdk
 repository: https://github.com/Synesis-IT-PLC/convay-hls-player-flutter-sdk
 

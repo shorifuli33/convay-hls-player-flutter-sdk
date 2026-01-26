@@ -58,3 +58,5 @@ app.*.map.json
 !android/.gitignore
 !ios/.gitignore
 !ios/Package.swift
+!ios/convay_hls_player/Package.swift
+!ios/convay_hls_player/Package.swift
