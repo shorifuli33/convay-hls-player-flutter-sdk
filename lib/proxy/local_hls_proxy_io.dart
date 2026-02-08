@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,7 @@ class LocalHlsProxy {
   HttpServer? _server;
   Uri? _baseUri;
   ProxyUrlSigner? _urlSigner;
+  String? _secret;
   final http.Client _client = http.Client();
 
   bool get isRunning => _server != null;
@@ -19,10 +21,17 @@ class LocalHlsProxy {
   Future<void> start({required ProxyUrlSigner urlSigner}) async {
     if (_server != null) return;
     _urlSigner = urlSigner;
+    _secret = _generateSecret();
     _server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     _baseUri = Uri.parse('http://127.0.0.1:${_server!.port}');
     unawaited(_serveRequests());
     debugPrint('Local HLS proxy started at $_baseUri');
+  }
+
+  String _generateSecret() {
+    final random = Random.secure();
+    final values = List<int>.generate(32, (i) => random.nextInt(256));
+    return base64Url.encode(values);
   }
 
   Uri buildProxyUrl(Uri targetUrl) {
@@ -32,7 +41,10 @@ class LocalHlsProxy {
     }
     return baseUri.replace(
       path: _proxyPath,
-      queryParameters: {'url': targetUrl.toString()},
+      queryParameters: {
+        'url': targetUrl.toString(),
+        'key': _secret,
+      },
     );
   }
 
@@ -62,6 +74,13 @@ class LocalHlsProxy {
 
     if (request.uri.path != _proxyPath) {
       request.response.statusCode = HttpStatus.notFound;
+      await request.response.close();
+      return;
+    }
+
+    final key = request.uri.queryParameters['key'];
+    if (key == null || key != _secret) {
+      request.response.statusCode = HttpStatus.forbidden;
       await request.response.close();
       return;
     }
